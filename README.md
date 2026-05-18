@@ -50,7 +50,7 @@ A full-stack restaurant ordering web application built using Django, Bootstrap, 
 ## Installation
 
 ```bash
-git clone https://github.com/yourusername/restaurant-management-system.git
+git clone https://github.com/sharusharaths658-del/restaurant-management-system.git
 
 cd restaurant-management-system
 
