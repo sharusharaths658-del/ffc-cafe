@@ -4,7 +4,7 @@
 
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 
-<button id="pay-btn">Pay ₹{{ order.total_amount }}</button>
+<button id="pay-btn">Pay ₹{{ order.total_amount|floatformat:2 }}</button>
 
 <script>
 var options = {
