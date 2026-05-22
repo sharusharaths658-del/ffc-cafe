@@ -132,7 +132,7 @@ def place_order(request):
         menu_item_id, variant_id = key.split('_')
         variant = get_object_or_404(Variant, id=variant_id)
         
-        price = item['price']
+        price = Decimal(str(item['price']))        
         quantity = item['quantity']
 
         OrderItem.objects.create(
