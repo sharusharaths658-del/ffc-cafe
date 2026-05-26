@@ -63,23 +63,18 @@ def add_to_cart(request, variant_id):
         'success':True,
         'cart_count':cart_count
     })
-    return redirect('menu')
 
 @login_required
 def cart_view(request):
     cart = request.session.get('cart', {})
     
-    subtotal = sum(item['price'] * item['quantity'] for item in cart.values())
+    subtotal = sum(float(item['price']) * int(item['quantity']) for item in cart.values())
     sgst = round(subtotal * 0.025, 2)
     cgst = round(subtotal * 0.025, 2)
     total = round(subtotal + sgst + cgst, 2)
     
     return render(request, 'cart.html', {
-        'cart': cart,
-        'subtotal': subtotal,
-        'sgst': sgst,
-        'cgst': cgst,
-        'total': total
+        'cart': cart
     })
 
 def increase_quantity(request, key):
@@ -145,25 +140,37 @@ def place_order(request):
 
         total += price * quantity
 
-    sgst = total * Decimal("0.025")
-    cgst = total * Decimal("0.025")
-    final_total = total + sgst + cgst
+    cart = request.session.get('cart', {})
 
-    order.total_amount = final_total
+    subtotal = sum(
+    Decimal(str(item['price'])) * int(item['quantity'])
+    for item in cart.values()
+    )
+    sgst = subtotal * Decimal("0.025")
+    cgst = subtotal * Decimal("0.025")
+
+    total = subtotal + sgst + cgst
+
+    order.total_amount = total
     order.save()
 
     client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
 
     payment = client.order.create({
-        "amount": int(final_total * 100),  
+        "amount": int(total * 100),  
         "currency": "INR",
         "payment_capture": "1"
     })
 
+    request.session['order_id'] = order.id
     return render(request, "payment.html", {
         "order": order,
         "payment": payment,
-        "key": settings.RAZORPAY_KEY_ID
+        "key": settings.RAZORPAY_KEY_ID,
+        'subtotal': subtotal,
+        'sgst': sgst,
+        'cgst': cgst,
+        'total': total
     })
 
 @login_required
@@ -215,9 +222,14 @@ def logout_view(request):
     return redirect('login')
 
 def payment_success(request):
-    payment_id = request.GET.get('payment_id')
 
-    order = Order.objects.last()
+    payment_id = request.GET.get('payment_id')
+    order_id = request.session.get('order_id')
+
+    if not order_id:
+        return redirect('cart')
+
+    order = get_object_or_404(Order, id=order_id)
 
     Payment.objects.create(
         order=order,
@@ -228,4 +240,10 @@ def payment_success(request):
 
     request.session['cart'] = {}
 
-    return render(request, 'success.html')
+    if 'order_id' in request.session:
+        del request.session['order_id']
+
+    return render(request, 'success.html', {
+        'order': order,
+        'payment_id': payment_id
+    })

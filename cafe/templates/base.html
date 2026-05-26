@@ -9,23 +9,23 @@
 </head>
 <body>
 
-<nav class="navbar navbar-dark bg-dark px-3">
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top px-3">
     <span class="navbar-brand">FFC Cafe</span>
 
     <div>
         <a href="{% url 'menu' %}" class="btn btn-light btn-sm">Menu</a>
         <a href="{% url 'cart' %}"
-   class="btn btn-warning btn-sm position-relative">Cart<span id="cart-count"
+      class="btn btn-warning btn-sm position-relative">Cart<span id="cart-count"
       class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
 
       {% if cart_count == 0 %}
       style="display:none;"
       {% endif %}>
 
-    {{ cart_count }}
+     {{ cart_count }}
 
-</span>
-</a>
+        </span>
+        </a>
         <a href="{% url 'order_history' %}" class="btn btn-info btn-sm">Orders</a>      
         {% if request.user.is_authenticated %}
             <span class="text-white ms-2">{{ request.user.username }}</span>
@@ -44,7 +44,7 @@
     {% endfor %}
 {% endif %}
 
-<div class="container mt-4">
+<div class="container pt-5 mt-4">
     {% block content %}{% endblock %}
 </div>
 <div id="toast-box"
